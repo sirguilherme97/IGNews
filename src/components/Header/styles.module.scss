@@ -1,4 +1,9 @@
 .headerContainer {
+  @media (min-width: 2540px) {
+    font-size: 200%;
+    height: 140%;
+    // background-color: #be0;
+  }
   height: 5rem;
   border-bottom: 1px solid var(--gray-800);
 }

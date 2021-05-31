@@ -1,8 +1,10 @@
-import {GetServerSideProps} from 'next'
+import {GetStaticProps} from 'next'
 import Head from 'next/head'
 import {stripe} from '../services/stripe'
-import { SubscribeButton } from '../SubscribeButton'
+import { SubscribeButton } from '../components/SubscribeButton'
 import styles from './home.module.scss'
+
+import React from 'react'
 
 interface HomeProps {
   product:{
@@ -10,7 +12,6 @@ interface HomeProps {
     amount: number;
   }
 }
-
 
 export default function Home({product}:HomeProps) {
   return (
@@ -27,7 +28,7 @@ export default function Home({product}:HomeProps) {
             Get access to all the publications <br/>
             <span>for {product.amount} month</span>
           </p>
-          <SubscribeButton/>
+          <SubscribeButton priceId={product.priceId}/>
         </section>
         <img src="/images/avatar.svg" alt="Girls Coding" />
       </main>
@@ -35,20 +36,21 @@ export default function Home({product}:HomeProps) {
   )
 }
 
-export const getServerSideProps:GetServerSideProps = async () => {
-  const price = await stripe.prices.retrieve('price_1Iv3L3IWLePIgwEoo7tBDLGg',{
-    expand:['product']
-  })
+export const getStaticProps:GetStaticProps = async () => {
+  const price = await stripe.prices.retrieve('price_1Iv3L3IWLePIgwEoo7tBDLGg')
 
   const product = {
     priceId: price.id,
-    amount: price.unit_amount / 100,
-
+    amount: new Intl.NumberFormat ('en-US', {
+        style:'currency',
+        currency: 'USD',
+    }).format((price.unit_amount / 100))
   }
 
   return {
     props:{
-      product,
-    }
+      product
+    },
+    revalidate: 60 * 60 * 24, // 24 horas
   }
 }
